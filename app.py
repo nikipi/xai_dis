@@ -452,7 +452,7 @@ class Model():
 
 if __name__ == "__main__":
 
-    a= Model('/Users/ypi/Desktop/xai_data/heloc_dataset_use.csv')
+    a= Model('heloc_dataset_use.csv')
     a.train_model(3)
     a.test_model()
 
