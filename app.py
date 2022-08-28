@@ -18,7 +18,6 @@ from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
 import numpy as np
 import re
-import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
