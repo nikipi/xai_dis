@@ -1,0 +1,10 @@
+xgboost==0.82 
+streamlit==0.86.0
+plotly 
+mlxtend 
+seaborn
+shap
+scikit-learn
+sklearn
+pandas 
+pickleshare==0.7.5
