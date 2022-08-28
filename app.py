@@ -242,7 +242,7 @@ class Model():
         self.test = pd.concat([X_test, self.y_test_df], axis=1)
 
 
-        self.test.to_csv('/Users/ypi/Desktop/xai_data/heloc_dataset_test.csv')
+#         self.test.to_csv('/Users/ypi/Desktop/xai_data/heloc_dataset_test.csv')
 
         # st.write("Training Accuracy:", acc_train, '%')
         # st.write("Test Accuracy:", acc_test, '%')
