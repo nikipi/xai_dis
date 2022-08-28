@@ -5,7 +5,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import pandas as pd
 #
-# print(observe_prepare_data('/Users/ypi/Desktop/heloc_dataset_v1.csv'))
+# print(observe_prepare_data('heloc_dataset_v1.csv'))
 #
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
@@ -121,7 +121,7 @@ class Model():
         self.train = pd.concat([self.X_train, self.y_train_df], axis=1)
         self.test = pd.concat([self.X_test, self.y_test_df], axis=1)
 
-        self.test.to_csv('/Users/ypi/Desktop/xai_data/heloc_dataset_test.csv')
+        self.test.to_csv('heloc_dataset_test.csv')
 
         print("Training Accuracy:", acc_train, '%')
         print("Test Accuracy:", acc_test, '%')
