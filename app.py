@@ -1,53 +1,116 @@
-
-
-import ssl
-
-ssl._create_default_https_context = ssl._create_unverified_context
-import pandas as pd
-#
-# print(observe_prepare_data('heloc_dataset_v1.csv'))
-#
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import GridSearchCV
-
-from sklearn.tree import DecisionTreeClassifier
-from sklearn import tree
-import graphviz
-from sklearn.metrics import classification_report, confusion_matrix
-
-import pandas as pd
-import numpy as np
+from copyreg import pickle
+import math
+from math import sqrt
+import pickle
+import plotly.express as px
+from sklearn.tree import _tree
 import re
+
+from IPython.display import display
+import pandas as pd
+#
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
+import streamlit as st
+import numpy as np
+
+
 import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+# from witwidget.notebook.visualization import WitWidget, WitConfigBuilder
+
+
+
+from sklearn.decomposition import PCA
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+import plotly.express as px
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
+import xgboost as xgb
+from xgboost.sklearn import XGBClassifier
+
+
+from sklearn.metrics import accuracy_score
+import pandas as pd
+import shap
+
+st.set_page_config(
+    page_title="XAI Discretion",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    page_icon="🎈",
+
+)
+
+
+st.set_option('deprecation.showPyplotGlobalUse', False)
+st.set_option('deprecation.showfileUploaderEncoding', False)
+
+
+hide_streamlit_style = """
+<style>
+.css-hi6a2p {padding-top: 0rem;}
+</style>
+
+"""
+
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# st.title('XAI Methods On Human-AI Cooperation Spectrum')
+
+# st.title("""
+#  Visually Explore Machine Learning Prediction
+# """)
+
+from enum import Enum
+from io import BytesIO, StringIO
+from typing import Union
+
 import pandas as pd
 import streamlit as st
-from sklearn.model_selection import train_test_split, GridSearchCV
-from IPython.display import display
-#
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
-import shap
-from sklearn.tree import _tree
+from sklearn.datasets import load_breast_cancer
 
-# choose a random element from a list
-from random import seed
-from random import choice
-import math
-#
 
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
+# FILE_TYPES = ["csv",'xlsx']
 
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import GridSearchCV
 
-from sklearn.tree import DecisionTreeClassifier
-from sklearn import tree
-import graphviz
-from sklearn.metrics import classification_report, confusion_matrix
+st.write("""
+**Task Description**
+
+You are a loan approval officer and you are verifying recommendations made by AI models.
+You have the access to the explanations of AI decisions. You can adopt or override AI decisions.
+Your job is to make as accurate decisions as possible which means reject applicants with high risks and approve applicants with low risks.
+
+""")
+
+st.write('\n')
+
+
+def load_process_data(filename):
+    data = pd.read_csv(filename, engine='python', index_col=False)
+    # remove first column
+    data = data.iloc[:, 1:]
+
+    ### remove special values
+
+    cols_name = data.columns
+    for cols in cols_name:
+        data = data[data[cols] != -9]
+        data = data[data[cols] != -8]
+        data = data[data[cols] != -7]
+    
+    return data
+
+
+df = load_process_data('heloc_dataset_use.csv')
+
+
 
 def euclidean_distance(row1, row2):
     distance = 0.0
@@ -55,28 +118,11 @@ def euclidean_distance(row1, row2):
         distance += (row1[i] - row2[i]) ** 2
     return math.sqrt(distance)
 
-
-
-def observe_prepare_data(filename):
-    data = pd.read_csv(filename, engine='python', index_col=False)
-    # remove first column
-    data = data.iloc[:, 1:]
-    # print(data.head())
-    # print(data.info())
-    # print(data.describe())
-    # print(data.shape)
-
-    ### drop special cases
-    cols_name = data.columns
-    for cols in cols_name:
-        data = data[data[cols] != -9]
-        data = data[data[cols] != -8]
-        data = data[data[cols] != -7]
-
-    print('Special cases have been dropped')
-
+@st.cache(allow_output_mutation=True)
+def split_df(data):
+    
     variable_names = list(data.columns[1:])
-    print(variable_names)
+    
     X = data[variable_names]
 
     data['RiskPerformance'] = np.where(data['RiskPerformance'] == "Bad", 1, 0)
@@ -87,50 +133,125 @@ def observe_prepare_data(filename):
 
     return X, y, X_train, X_test, y_train, y_test
 
+X, y, X_train, X_test, y_train, y_test = split_df(df)
 
+
+with st.expander("Training Dataset Preview"):
+
+    training= pd.concat([pd.DataFrame(y_train),X_train], axis=1)
+
+    st.write(df)
+
+
+with st.expander("Dataset Exploration"):
+    col1, col2  = st.columns(2)
+
+    with col1:
+        st.subheader('Histogram for each feature')
+
+        feature = st.selectbox('Choose the feature', [ 'ExternalRiskEstimate','MSinceMostRecentTradeOpen','MSinceMostRecentDelq',
+        'MSinceMostRecentInqexcl7day','NetFractionRevolvingBurden', 'NetFractionInstallBurden'
+
+ ])
+        st.write('\n')
+        st.write('\n')
+        st.write('\n')
+        st.write('\n')
+        st.write('\n')
+        st.write('\n')
+
+        fig1 = px.histogram(df, x=feature, color="RiskPerformance", marginal="rug")
+        st.plotly_chart(fig1,use_container_width=True)
+
+
+    with col2:
+        st.subheader('Scatter plot for variable interaction')
+
+        X_Value = st.selectbox(
+        'Select X-axis value',
+        ('ExternalRiskEstimate','MSinceMostRecentTradeOpen','MSinceMostRecentDelq',
+        'MSinceMostRecentInqexcl7days','NetFractionRevolvingBurden', 'NetFractionInstallBurden'
+
+)
+    )
+
+        Y_Value = st.selectbox(
+        'Select Y-axis value',
+        ('ExternalRiskEstimate','MSinceMostRecentTradeOpen','MSinceMostRecentDelq',
+        'MSinceMostRecentInqexcl7day','NetFractionRevolvingBurden', 'NetFractionInstallBurden'
+
+)
+    )
+
+
+    # with st.echo(code_location='below'):
+        
+
+        fig2 = px.scatter(df,
+                x=df[X_Value],
+                y=df[Y_Value],
+                color="ExternalRiskEstimate"
+            )
+        fig2.update_layout(
+                xaxis_title=X_Value,
+                yaxis_title=Y_Value,
+            )
+        st.plotly_chart(fig2, use_container_width=True)
+
+
+
+
+testid=[i for i in range(1,len(X_test))]
+
+# with st.expander("Diagnose New Patients"):
+#     NewPatients = st.selectbox(
+#         'Choose the patient id in the test set',testid ,key=str(1) )
+#     st.dataframe(X_test.iloc[[NewPatients-1]])
+
+#     Diagnose = st.selectbox(
+#         'Choose your diagnosis: The tumor of this patient is ', ('', 'malignant', 'benign'))
+
+#     rightanswer = y_test.iloc[NewPatients - 1]
 
 class Model():
-    def __init__(self, file_name):
-        self.X, self.y, self.X_train, self.X_test, self.y_train, self.y_test = observe_prepare_data(file_name)
-        print(self.y_train)
-        self.model = None
+    def __init__(self):
+        
+        self.model = pickle.load(open('decision_tree.pkl', 'rb'))
 
-    def train_model(self, max_depth=3):
-        self.model = DecisionTreeClassifier(criterion='entropy', max_depth=3, min_samples_leaf=50, random_state=42)
-        self.model.fit(self.X_train, self.y_train)
+   
 
     def test_model(self):
         if (not self.model):
             print("Train Model First")
 
-        self.train_pred = self.model.predict(self.X_train)
-        self.test_pred = self.model.predict(self.X_test)
+        self.train_pred = self.model.predict(X_train)
+        self.test_pred = self.model.predict(X_test)
 
-        self.y_train_df = pd.DataFrame(self.y_train)
+        self.y_train_df = pd.DataFrame(y_train)
         # self.train_pred_df = pd.DataFrame(self.train_pred, columns= ['Predict'])
         self.y_train_df['Predict'] = self.train_pred
 
-        self.y_test_df = pd.DataFrame(self.y_test)
+        self.y_test_df = pd.DataFrame(y_test)
         # self.train_pred_df = pd.DataFrame(self.train_pred, columns= ['Predict'])
         self.y_test_df['Predict'] = self.test_pred
 
-        acc_train = round((np.mean(self.train_pred == self.y_train) * 100), 2)
-        acc_test = round((np.mean(self.test_pred == self.y_test) * 100), 2)
+        acc_train = round((np.mean(self.train_pred == y_train) * 100), 2)
+        acc_test = round((np.mean(self.test_pred == y_test) * 100), 2)
 
-        self.train = pd.concat([self.X_train, self.y_train_df], axis=1)
-        self.test = pd.concat([self.X_test, self.y_test_df], axis=1)
+        self.train = pd.concat([X_train, self.y_train_df], axis=1)
+        self.test = pd.concat([X_test, self.y_test_df], axis=1)
 
-        self.test.to_csv('heloc_dataset_test.csv')
 
-        print("Training Accuracy:", acc_train, '%')
-        print("Test Accuracy:", acc_test, '%')
+        self.test.to_csv('/Users/ypi/Desktop/xai_data/heloc_dataset_test.csv')
 
+        # st.write("Training Accuracy:", acc_train, '%')
+        # st.write("Test Accuracy:", acc_test, '%')
 
 
     def show_tree(self):
-
+    
         dot_data = tree.export_graphviz(self.model, out_file=None,
-                                        feature_names=self.X_train.columns,
+                                        feature_names=X_train.columns,
                                         class_names=['Good', 'Bad'], filled=True,
                                         rounded=True,
                                         special_characters=True)
@@ -161,14 +282,14 @@ class Model():
             if len(decisionpath[pathnum]) < 3:
                 decisionpath[pathnum] = decisionpath[pathnum - 1][:max_depth - len(decisionpath[pathnum])] + \
                                         decisionpath[pathnum]
-        col_name = self.X_train.columns
+        col_name = X_train.columns
 
         pathname = []
 
         for path in decisionpath:
             eachpath = []
             for i in path:
-                eachpath.append(self.X_train.columns[i])
+                eachpath.append(X_train.columns[i])
             pathname.append(eachpath)
 
         self.decisionpath = pathname
@@ -203,7 +324,7 @@ class Model():
 
         tree_ = self.model.tree_
         feature_name = [
-            self.X_train.columns[i] if i != _tree.TREE_UNDEFINED else "undefined!"
+            X_train.columns[i] if i != _tree.TREE_UNDEFINED else "undefined!"
             for i in tree_.feature]
 
         paths = []
@@ -293,7 +414,7 @@ class Model():
             self.accuracy.append(round(np.mean(i['RiskPerformance'].array == i['Predict'].array) * 100, 2))
 
     def findtestleaf(self):
-        leafdis = self.model.apply(self.X_test)
+        leafdis = self.model.apply(X_test)
 
         leaf_order = {3: 0, 4: 0, 6: 2, 7: 3, 10: 4, 11: 5, 13: 6, 14: 7}
 
@@ -312,8 +433,8 @@ class Model():
 
     def shapfeatureimportance(self, idnum):
         self.explainer = shap.TreeExplainer(self.model)
-        data_for_prediction = self.X_test.iloc[idnum]
-        self.features = self.X_test.columns
+        data_for_prediction = X_test.iloc[idnum]
+        self.features = X_test.columns
         # self.glo_shap = self.explainer.shap_values(self.X_test)[0]
         # print(len(self.glo_shap))
 
@@ -403,7 +524,7 @@ class Model():
         #         self.methodtwopred = []
         #         for i in self.idlist:
         leafid = self.test_copy.iloc[idnum]['leafid']
-        st.write('The information for id number %d is' % idnum, self.X_test.iloc[idnum, :])
+    
         st.write('the leaf node is ', leafid)
 
         if self.test['Predict'].iloc[idnum] == 0:
@@ -426,7 +547,7 @@ class Model():
     def find_nearest_neighbor(self, df, i, num_neighbors):
         distances = list()
         for j in range(len(df)):
-            dist = euclidean_distance(df.iloc[j, :], self.X_test.iloc[i, :])
+            dist = euclidean_distance(df.iloc[j, :], X_test.iloc[i, :])
             distances.append((df.iloc[j], dist))
         distances.sort(key=lambda tup: tup[1])
         neighbors = list()
@@ -441,7 +562,7 @@ class Model():
 
         #             print('The information for id number is')
         #             print(pd.DataFrame( self.X_test.iloc[[i]]) )
-        idn = list(self.find_nearest_neighbor(self.X_train, idnum, 3))
+        idn = list(self.find_nearest_neighbor(X_train, idnum, 3))
         print(idn)
 
         st.write('The nearest neighbors are:')
@@ -451,9 +572,8 @@ class Model():
 
 
 if __name__ == "__main__":
-
-    a= Model('heloc_dataset_use.csv')
-    a.train_model(3)
+    
+    a= Model()
     a.test_model()
 
     a.show_rules(None)
@@ -469,7 +589,7 @@ if __name__ == "__main__":
     #,54,411,192,463,528,384,395,408,417
 
     for idnum in testid:
-        st.write('The information for id number %d is' % idnum, a.X_test.iloc[idnum, :])
+        st.write('The information for id number %d is' % idnum, X_test.iloc[idnum, :])
         st.write('The prediction is ', a.test.iloc[idnum]['Predict'])
         st.write('The reality is ', a.test.iloc[idnum]['RiskPerformance'])
 
@@ -485,5 +605,25 @@ if __name__ == "__main__":
             a.method_two_show_decision_path_and_it_accuracy(idnum)
         if method == 'Example-Based-Explanation':
             a.example_base(idnum)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
