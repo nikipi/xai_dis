@@ -240,7 +240,8 @@ class Model():
 
         self.train = pd.concat([X_train, self.y_train_df], axis=1)
         self.test = pd.concat([X_test, self.y_test_df], axis=1)
-
+        
+ ## model.predict_proba(Xtest[:5])
 
 #         self.test.to_csv('/Users/ypi/Desktop/xai_data/heloc_dataset_test.csv')
 
